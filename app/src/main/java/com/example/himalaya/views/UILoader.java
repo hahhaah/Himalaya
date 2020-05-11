@@ -94,7 +94,6 @@ public abstract class UILoader extends FrameLayout {
         networkView.findViewById(R.id.network_error_area).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO:重新获取数据
                 if (mRetryListener != null) {
                     mRetryListener.onRetryClick();
                 }

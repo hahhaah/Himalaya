@@ -9,7 +9,7 @@
         android:layout_centerInParent="true"
         android:layout_height="wrap_content">
 
-        <ImageView
+        <com.example.himalaya.views.LoadingView
             android:layout_gravity="center"
             android:id="@+id/loading_img"
             android:layout_centerInParent="true"
