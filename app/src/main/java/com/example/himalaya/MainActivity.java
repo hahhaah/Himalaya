@@ -46,26 +46,6 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         initView();
         initEvent();
-
-//        Map<String, String> map = new HashMap<>();
-//        CommonRequest.getCategories(map, new IDataCallBack<CategoryList>() {
-//            @Override
-//            public void onSuccess(CategoryList categoryList) {
-//                mCategories = categoryList.getCategories();
-//                if(mCategories != null){
-//                    LogUtil.d(TAG,mCategories.size()+"----->");
-//                    for (Category category : mCategories) {
-//                        LogUtil.d(TAG,"种类有-->"+category.getCategoryName());
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onError(int i, String s) {
-//                LogUtil.e(TAG,"获取分类出错啦");
-//            }
-//        });
-
     }
 
     private void initEvent() {

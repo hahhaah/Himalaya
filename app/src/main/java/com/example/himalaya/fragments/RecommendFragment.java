@@ -14,6 +14,7 @@ import com.example.himalaya.adapters.RecommendListAdapter;
 import com.example.himalaya.base.BaseFragment;
 import com.example.himalaya.interfaces.IRecommendViewCallback;
 import com.example.himalaya.presenters.RecommendPresenter;
+import com.example.himalaya.views.UILoader;
 import com.ximalaya.ting.android.opensdk.model.album.Album;
 
 import net.lucode.hackware.magicindicator.buildins.UIUtil;
@@ -27,11 +28,41 @@ public class RecommendFragment extends BaseFragment implements IRecommendViewCal
     private RecyclerView mRecyclerView;
     private RecommendListAdapter mAdapter;
     private RecommendPresenter mRecommendPresenter;
+    private UILoader mUiLoader;
 
     @Override
-    public View onSubCreateView(LayoutInflater layoutInflater, ViewGroup container) {
+    public View onSubCreateView(final LayoutInflater layoutInflater, final ViewGroup container) {
         //View加载完成 并返回
 
+        mUiLoader = new UILoader(getContext()) {
+            @Override
+            protected View getSuccessView(ViewGroup parent) {
+                return createSuccessView(layoutInflater,parent);
+            }
+        };
+
+        //获取到逻辑层的对象
+        mRecommendPresenter = RecommendPresenter.getInstance();
+        mRecommendPresenter.registerViewCallback(this);
+        mRecommendPresenter.getRecommendList();
+
+        //解绑
+       if( mUiLoader.getParent() instanceof ViewGroup) {
+           ((ViewGroup) mUiLoader.getParent()).removeView(mUiLoader);
+       }
+
+       mUiLoader.setOnRetryListener(new UILoader.OnRetryClickListener() {
+           @Override
+           public void onRetryClick() {
+               if( mRecommendPresenter != null){
+                   mRecommendPresenter.getRecommendList();
+               }
+           }
+       });
+        return mUiLoader;
+    }
+
+    private View createSuccessView(LayoutInflater layoutInflater, ViewGroup container) {
         mRootView = layoutInflater.inflate(R.layout.fragment_recommend,container,false);
 
         //使用recyclerview步骤1
@@ -51,25 +82,9 @@ public class RecommendFragment extends BaseFragment implements IRecommendViewCal
         });
 
         //设置适配器
-
         mAdapter = new RecommendListAdapter();
         mRecyclerView.setAdapter(mAdapter);
-
-        getRecommendData();
-
-        //获取到逻辑层的对象
-        mRecommendPresenter = RecommendPresenter.getInstance();
-        mRecommendPresenter.registerViewCallback(this);
-
-        mRecommendPresenter.getRecommendList();
-
         return mRootView;
-    }
-
-    //获取到推荐内容
-    private void getRecommendData() {
-        //封装参数 获取到的推荐专辑数量
-
     }
 
 
@@ -77,17 +92,24 @@ public class RecommendFragment extends BaseFragment implements IRecommendViewCal
     public void onRecommendListLoaded(List<Album> result) {
         //当获取到推荐内容时，该方法会被调用
         mAdapter.setAlbumList(result);
+        mUiLoader.updateStatus(UILoader.UI_STATUS.SUCCESS);
     }
 
     @Override
-    public void onPullAndRefresh() {
-
+    public void onNetworkError() {
+        mUiLoader.updateStatus(UILoader.UI_STATUS.NETWORK_ERROR);
     }
 
     @Override
-    public void onLoadMore(List<Album> result) {
-
+    public void onContentEmpty() {
+        mUiLoader.updateStatus(UILoader.UI_STATUS.CONTENT_EMPTY);
     }
+
+    @Override
+    public void onLoading() {
+        mUiLoader.updateStatus(UILoader.UI_STATUS.LOADING);
+    }
+
 
     @Override
     public void onDestroyView() {

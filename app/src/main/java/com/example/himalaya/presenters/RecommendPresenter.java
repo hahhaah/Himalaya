@@ -39,6 +39,7 @@ public class RecommendPresenter implements IRecommendPresenter {
     @Override
     public void getRecommendList() {
         Map<String, String> map = new HashMap<>();
+        updateLoading();
         map.put(DTransferConstants.LIKE_COUNT, Constants.RECOMMEND_COUNT+"");
         CommonRequest.getGuessLikeAlbum(map, new IDataCallBack<GussLikeAlbumList>() {
             @Override
@@ -46,8 +47,6 @@ public class RecommendPresenter implements IRecommendPresenter {
                 if (gussLikeAlbumList != null) {
                     List<Album> albumList = gussLikeAlbumList.getAlbumList();
                     handleRecommendResult(albumList);
-                    //更新UI
-                    //updateRecommendData(albumList);
                 }
             }
 
@@ -55,28 +54,40 @@ public class RecommendPresenter implements IRecommendPresenter {
             public void onError(int i, String s) {
                 LogUtil.e(TAG,i+ "---> 获取推荐失败");
                 LogUtil.e(TAG,s+ "---> 获取推荐失败");
+
+                handleError();
             }
         });
+    }
+
+    private void handleError() {
+        if (mCallbacks != null) {
+            for(IRecommendViewCallback callback : mCallbacks){
+                callback.onNetworkError();
+            }
+        }
     }
 
 
     private void handleRecommendResult(List<Album> albumList) {
         //通知UI
-        if (albumList != null) {
-            for(IRecommendViewCallback callback : mCallbacks){
-                callback.onRecommendListLoaded(albumList);
+        if (albumList != null){
+            if(albumList.size() == 0){
+                for(IRecommendViewCallback callback : mCallbacks){
+                    callback.onContentEmpty();
+                }
+            }else{
+                for(IRecommendViewCallback callback : mCallbacks){
+                    callback.onRecommendListLoaded(albumList);
+                }
             }
         }
     }
 
-    @Override
-    public void pullAndRefresh() {
-
-    }
-
-    @Override
-    public void loadMore() {
-
+    private void updateLoading(){
+        for(IRecommendViewCallback callback : mCallbacks){
+            callback.onLoading();
+        }
     }
 
     @Override
