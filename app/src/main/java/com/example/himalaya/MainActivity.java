@@ -37,7 +37,7 @@ public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
     private MagicIndicator mMagicIndicator;
-    private List<Category> mCategories;
+
     private ViewPager mViewPager;
     private IndicatorAdapter mIndicatorAdapter;
 

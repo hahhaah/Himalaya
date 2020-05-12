@@ -2,18 +2,86 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:background="@color/colorPrimaryDark"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ImageView
-        android:background="@color/mainColor"
         android:scaleType="fitXY"
         android:id="@+id/cover_large_bg"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         />
-    
+
+    <RelativeLayout
+        android:id="@+id/subscription_container"
+        android:layout_below="@id/cover_large_bg"
+        android:background="@color/colorWhite"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:text="订阅"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@color/colorWhite"
+            android:background="@drawable/shape_subscription_bg"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/play_container"
+        android:background="#ebe8e8"
+        android:layout_below="@id/subscription_container"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+
+        <ImageView
+            android:id="@+id/play_icon"
+            android:src="@mipmap/another_play"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="15dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp" />
+
+        <TextView
+            android:id="@+id/play_status_view"
+            android:text="继续播放"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/play_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <TextView
+            android:text="选集"
+            android:layout_marginRight="4dp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <ImageView
+            android:id="@+id/arrow"
+            android:src="@mipmap/pull"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="12dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp" />
+    </RelativeLayout>
+
+
     <com.example.himalaya.views.RoundRectImageView
         android:id="@+id/cover_small"
         android:layout_below="@+id/cover_large_bg"
@@ -35,17 +103,25 @@
         <TextView
             android:id="@+id/detail_title"
             android:text="这是标题"
-            android:textSize="18sp"
+            android:textSize="21sp"
+            android:textColor="@color/textColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/detail_author"
             android:text="作者是我"
-            android:textColor="#fff"
-            android:textSize="18sp"
+            android:textColor="@color/colorGrey"
+            android:textSize="17sp"
             android:layout_marginTop="7dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/album_tracks_container"
+        android:layout_below="@+id/play_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </RelativeLayout>

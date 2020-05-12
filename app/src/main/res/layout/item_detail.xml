@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@drawable/shape_item_bg"
+    android:layout_height="70dp">
+
+    <TextView
+        android:text="0"
+        android:id="@+id/track_index"
+        android:textSize="22sp"
+        android:layout_marginLeft="10dp"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    
+    <LinearLayout
+        android:layout_toRightOf="@id/track_index"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="15dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/track_title"
+            android:text="逍遥游逍遥游逍遥游逍遥游逍遥游逍遥游"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="#000"
+            android:textSize="18sp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="90dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+
+                android:layout_gravity="center"
+                android:src="@mipmap/another_play"
+                android:layout_width="12dp"
+                android:layout_height="12dp" />
+
+            <TextView
+                android:text="17.1w"
+                android:id="@+id/track_playcount"
+                android:textColor="@color/textColor"
+                android:layout_marginLeft="5dp"
+                android:layout_width="43dp"
+                android:layout_height="19dp" />
+
+            <ImageView
+                android:layout_gravity="center"
+                android:src="@mipmap/time"
+                android:layout_width="12dp"
+                android:layout_marginLeft="30dp"
+                android:layout_height="12dp" />
+
+            <TextView
+                android:id="@+id/track_duration"
+                android:text="05:07"
+                android:textColor="@color/textColor"
+                android:layout_marginLeft="5dp"
+                android:layout_width="43dp"
+                android:layout_height="19dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:text="2018-06"
+        android:id="@+id/detail_update_time"
+        android:textSize="14sp"
+        android:textColor="@color/textColor"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>
