@@ -66,16 +66,22 @@ public class DetailPresenter implements IDetailPresenter {
             public void onError(int i, String msg) {
                 LogUtil.e(TAG,"erorCode-->"+i);
                 LogUtil.e(TAG,"errorMsg-->"+msg);
+                handleError(i, msg);
             }
         });
 
+    }
+
+    private void handleError(int code, String msg) {
+        for (IDetailViewCallback callback : mCallbacks) {
+            callback.onNetworkError(code,msg);
+        }
     }
 
     private void handleTracksLoaded(TrackList trackList) {
         for (IDetailViewCallback callback : mCallbacks) {
             callback.onDetailListLoaded(trackList.getTracks());
         }
-
     }
 
     @Override
@@ -87,9 +93,9 @@ public class DetailPresenter implements IDetailPresenter {
     }
 
     @Override
-    public void unRegisterViewCallback(IDetailViewCallback callback) {
-        if(mCallbacks.contains(callback)){
-            mCallbacks.remove(callback);
+    public void unRegisterViewCallback(IDetailViewCallback iDetailViewCallback) {
+        if(mCallbacks.contains(iDetailViewCallback)){
+            mCallbacks.remove(iDetailViewCallback);
         }
     }
 

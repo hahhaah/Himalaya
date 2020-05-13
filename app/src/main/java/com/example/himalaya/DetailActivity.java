@@ -1,11 +1,15 @@
 package com.example.himalaya;
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,7 +22,9 @@ import com.example.himalaya.adapters.DetailListAdapter;
 import com.example.himalaya.base.BaseActivity;
 import com.example.himalaya.interfaces.IDetailViewCallback;
 import com.example.himalaya.presenters.DetailPresenter;
+import com.example.himalaya.presenters.PlayerPresenter;
 import com.example.himalaya.utils.BlurImage;
+import com.example.himalaya.views.UILoader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.ximalaya.ting.android.opensdk.model.album.Album;
@@ -39,6 +45,9 @@ public class DetailActivity extends BaseActivity {
     private RecyclerView mRecyclerView;
     private int mCurPage = 1;
     private DetailListAdapter mAdapter;
+    private FrameLayout mDetailListContainer;
+    private UILoader mUiLoader;
+    private long mCurId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,13 +62,28 @@ public class DetailActivity extends BaseActivity {
             @Override
             public void onDetailListLoaded(List<Track> tracks) {
                 //获取到专辑下声音列表后 进行recyclerview的设置
+
+                if (tracks == null || tracks.size() == 0) {
+                    if (mUiLoader != null) {
+                        mUiLoader.updateStatus(UILoader.UI_STATUS.CONTENT_EMPTY);
+                    }
+                }
+
                 mAdapter.setData(tracks);
+                mUiLoader.updateStatus(UILoader.UI_STATUS.SUCCESS);
             }
 
             @Override
             public void onAlbumLoaded(Album album) {
                 //获取到专辑详情
-                mDetailPresenter.getAlbumDetail((int)album.getId(),mCurPage);
+                mCurId = album.getId();
+                if (mDetailPresenter != null) {
+                    mDetailPresenter.getAlbumDetail((int)album.getId(),mCurPage);
+                }
+                //显示加载中Loading界面
+                if (mUiLoader != null) {
+                    mUiLoader.updateStatus(UILoader.UI_STATUS.LOADING);
+                }
 
                 if(mTitleView != null)mTitleView.setText(album.getAlbumTitle());
                 if(mAuthorView != null)mAuthorView.setText(album.getAnnouncer().getNickname());
@@ -86,19 +110,49 @@ public class DetailActivity extends BaseActivity {
                     Picasso.with(DetailActivity.this).load(album.getCoverUrlSmall()).into(mSmallCover);
                 }
             }
+
+            @Override
+            public void onNetworkError(int code, String msg) {
+                mUiLoader.updateStatus(UILoader.UI_STATUS.NETWORK_ERROR);
+            }
         });
 
 
     }
 
     private void initView() {
+        mDetailListContainer = findViewById(R.id.detail_list_container);
+
+        if(mUiLoader == null){
+            mUiLoader = new UILoader(this) {
+                @Override
+                protected View getSuccessView(ViewGroup container) {
+                    return createSuccessView(container);
+                }
+            };
+            mDetailListContainer.removeAllViews();
+            mDetailListContainer.addView(mUiLoader);
+            mUiLoader.setOnRetryListener(new UILoader.OnRetryClickListener() {
+                @Override
+                public void onRetryClick() {
+                    if (mDetailPresenter != null) {
+                        mDetailPresenter.getAlbumDetail((int)mCurId,mCurPage);
+                    }
+                }
+            });
+        }
+
         mLargeCover = findViewById(R.id.cover_large_bg);
         mSmallCover = findViewById(R.id.cover_small);
         mTitleView = findViewById(R.id.detail_title);
         mAuthorView = findViewById(R.id.detail_author);
-
         //RecyclerView的相关操作
-        mRecyclerView = findViewById(R.id.album_tracks_container);
+
+    }
+
+    private View createSuccessView(ViewGroup container) {
+        View detailListView = LayoutInflater.from(this).inflate(R.layout.item_detail_list,container,false);
+        mRecyclerView = detailListView.findViewById(R.id.album_tracks_container);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         //设置适配器
@@ -113,5 +167,19 @@ public class DetailActivity extends BaseActivity {
                 outRect.bottom = UIUtil.dip2px(view.getContext(),5);
             }
         });
+
+        mAdapter.setOnItemClick(new DetailListAdapter.ItemClickListener() {
+            @Override
+            public void onItemClick(List<Track> tracks, int pos) {
+                PlayerPresenter playerPresenter = PlayerPresenter.getInstance();
+                playerPresenter.setPlayList(tracks,pos);
+                Intent intent  = new Intent(DetailActivity.this,PlayerActivity.class);
+                //intent.putExtra("INDEX",pos);
+                startActivity(intent);
+            }
+
+        });
+
+        return detailListView;
     }
 }

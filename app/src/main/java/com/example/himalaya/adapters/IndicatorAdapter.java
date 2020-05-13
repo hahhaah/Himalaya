@@ -38,7 +38,6 @@ public class IndicatorAdapter extends CommonNavigatorAdapter {
         titleView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            //TODO:切换下方页面
                 if (mOnTabClickListener != null) {
                     mOnTabClickListener.onTabClick(index);
                 }

@@ -103,4 +103,6 @@ public class RecommendPresenter implements IRecommendPresenter {
             mCallbacks.remove(callback);
         }
     }
+
+
 }
