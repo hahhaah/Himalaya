@@ -1,7 +1,6 @@
 package com.example.himalaya;
 
 import android.content.Intent;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -21,20 +20,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.himalaya.adapters.DetailListAdapter;
 import com.example.himalaya.base.BaseActivity;
 import com.example.himalaya.interfaces.IDetailViewCallback;
+import com.example.himalaya.interfaces.IPlayerCallback;
 import com.example.himalaya.presenters.DetailPresenter;
 import com.example.himalaya.presenters.PlayerPresenter;
 import com.example.himalaya.utils.BlurImage;
+import com.example.himalaya.utils.LogUtil;
 import com.example.himalaya.views.UILoader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.ximalaya.ting.android.opensdk.model.album.Album;
 import com.ximalaya.ting.android.opensdk.model.track.Track;
+import com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl;
 
 import net.lucode.hackware.magicindicator.buildins.UIUtil;
 
 import java.util.List;
 
-public class DetailActivity extends BaseActivity {
+public class DetailActivity extends BaseActivity implements IPlayerCallback {
 
     //Ctrl + Alt + F 将局部变量抽取为成员变量
     private ImageView mLargeCover;
@@ -48,6 +50,11 @@ public class DetailActivity extends BaseActivity {
     private FrameLayout mDetailListContainer;
     private UILoader mUiLoader;
     private long mCurId;
+    private ImageView mPlayBtn;
+    private TextView mPlayControlText;
+    private PlayerPresenter mPlayerPresenter;
+    private List<Track> mCurPlayList = null;
+    private static final String TAG = "DetailActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,8 +63,13 @@ public class DetailActivity extends BaseActivity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
 
-        initView();
         mDetailPresenter = DetailPresenter.getInstance();
+
+        mPlayerPresenter = PlayerPresenter.getInstance();
+        mPlayerPresenter.registerViewCallback(this);
+
+        initView();
+
         mDetailPresenter.registerViewCallback(new IDetailViewCallback() {
             @Override
             public void onDetailListLoaded(List<Track> tracks) {
@@ -70,6 +82,7 @@ public class DetailActivity extends BaseActivity {
                 }
 
                 mAdapter.setData(tracks);
+                mCurPlayList = tracks;
                 mUiLoader.updateStatus(UILoader.UI_STATUS.SUCCESS);
             }
 
@@ -118,6 +131,7 @@ public class DetailActivity extends BaseActivity {
         });
 
 
+
     }
 
     private void initView() {
@@ -146,8 +160,33 @@ public class DetailActivity extends BaseActivity {
         mSmallCover = findViewById(R.id.cover_small);
         mTitleView = findViewById(R.id.detail_title);
         mAuthorView = findViewById(R.id.detail_author);
-        //RecyclerView的相关操作
 
+        mPlayBtn = findViewById(R.id.detail_play_icon);
+        mPlayControlText = findViewById(R.id.play_status_view);
+
+        mPlayBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //控制播放器状态 还需判断播放器是否有播放列表
+                boolean has = mPlayerPresenter.hasPlayList();
+                LogUtil.d(TAG,"是否设置了播放列表："+has);
+                if (has) {
+                    handlePlayControl();
+                }else{          //若无 则播放默认曲目
+                    mPlayerPresenter.setPlayList(mCurPlayList,0);
+                }
+            }
+        });
+    }
+
+    private void handlePlayControl() {
+        if(mPlayerPresenter != null){
+            if (mPlayerPresenter.isPlaying()) {
+                mPlayerPresenter.pause();
+            }else{
+                mPlayerPresenter.play();
+            }
+        }
     }
 
     private View createSuccessView(ViewGroup container) {
@@ -181,5 +220,77 @@ public class DetailActivity extends BaseActivity {
         });
 
         return detailListView;
+    }
+
+    //---------------以下为实现IPlayerCallback接口的方法
+    @Override
+    public void onPlayStart() {
+        //文字修改为正在播放
+        updatePlayStatus();
+    }
+
+    private void updatePlayStatus() {
+        if (mPlayBtn != null && mPlayControlText!= null) {
+            boolean isPlaying = mPlayerPresenter.isPlaying();
+            mPlayBtn.setImageResource(isPlaying?R.mipmap.pause:R.mipmap.play_now);
+            mPlayControlText.setText(isPlaying?R.string.playing_now:R.string.paused_now);
+        }
+    }
+
+    @Override
+    public void onPlayPause() {
+        //文字修改为继续播放
+        updatePlayStatus();
+    }
+
+    @Override
+    public void onPlayStop() {
+        //文字修改为继续播放
+        updatePlayStatus();
+    }
+
+    @Override
+    public void onPlayNext(Track track) {
+
+    }
+
+    @Override
+    public void onPlayPrev(Track track) {
+
+    }
+
+    @Override
+    public void onPlayError() {
+
+    }
+
+    @Override
+    public void onListLoaded(List<Track> tracks) {
+
+    }
+
+    @Override
+    public void onPlayModeChange(XmPlayListControl.PlayMode playMode) {
+
+    }
+
+    @Override
+    public void onProgressChange(int cur, int total) {
+
+    }
+
+    @Override
+    public void onAdLoading() {
+
+    }
+
+    @Override
+    public void onAdFinished() {
+
+    }
+
+    @Override
+    public void onTrackUpdate(Track track, int pos) {
+
     }
 }

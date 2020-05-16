@@ -79,7 +79,8 @@
             android:layout_height="28dp">
 
             <ImageView
-                android:src="@mipmap/download"
+                android:id="@+id/play_mode"
+                android:src="@drawable/selector_play_mode"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="match_parent" />
@@ -106,6 +107,7 @@
                 android:layout_height="match_parent" />
 
             <ImageView
+                android:id="@+id/play_list"
                 android:src="@mipmap/play_list"
                 android:layout_width="0dp"
                 android:layout_weight="1"

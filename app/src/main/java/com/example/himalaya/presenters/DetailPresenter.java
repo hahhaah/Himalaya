@@ -64,7 +64,7 @@ public class DetailPresenter implements IDetailPresenter {
 
             @Override
             public void onError(int i, String msg) {
-                LogUtil.e(TAG,"erorCode-->"+i);
+                LogUtil.e(TAG,"errorCode-->"+i);
                 LogUtil.e(TAG,"errorMsg-->"+msg);
                 handleError(i, msg);
             }

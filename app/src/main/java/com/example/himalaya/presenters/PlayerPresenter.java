@@ -1,6 +1,9 @@
 package com.example.himalaya.presenters;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.example.himalaya.base.BaseApplication;
 import com.example.himalaya.interfaces.IPlayerCallback;
 import com.example.himalaya.interfaces.IPlayerPresenter;
@@ -17,7 +20,13 @@ import com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl;
 import com.ximalaya.ting.android.opensdk.player.service.XmPlayerException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl.PlayMode.PLAY_MODEL_LIST;
+import static com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl.PlayMode.PLAY_MODEL_LIST_LOOP;
+import static com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl.PlayMode.PLAY_MODEL_RANDOM;
+import static com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl.PlayMode.PLAY_MODEL_SINGLE_LOOP;
 
 public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, IXmPlayerStatusListener {
     private static PlayerPresenter sInstance = null;
@@ -27,11 +36,21 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
     private List<IPlayerCallback> mCallbacks = new ArrayList<>();
     private Track mTrack;
 
-    public int getCurrentIndex() {
-        return mCurrentIndex;
-    }
-
     private int mCurrentIndex = 0;
+    private final SharedPreferences mPlayMode;
+
+    private XmPlayListControl.PlayMode mCurMode = PLAY_MODEL_LIST;
+
+    public static final int PLAY_MODE_LIST_INT =0;
+    public static final int PLAY_MODE_LIST_LOOP_INT =1;
+    public static final int PLAY_MODE_RANDOM_INT =2;
+    public static final int PLAY_MODE_SINGLE_LOOP_INT =3;
+
+//    private boolean mIsReversed = false;
+
+    //sp key and name
+    public static final String SP_NAME = "PlayMode";
+    public static final String SP_KEY = "CurrentMode";
 
     private PlayerPresenter(){
         sPlayerManager = XmPlayerManager.getInstance(BaseApplication.getAppContext());
@@ -39,6 +58,9 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
         sPlayerManager.addAdsStatusListener(this);
         //注册播放器状态相关的接口
         sPlayerManager.addPlayerStatusListener(this);
+
+        //需要记录当前用户设定的播放模式 SharedPreferences
+        mPlayMode = BaseApplication.getAppContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
 
     }
 
@@ -96,7 +118,27 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
 
     @Override
     public void switchPlayMode(XmPlayListControl.PlayMode mode) {
+        if (sPlayerManager != null) {
+            mCurMode = mode;
+            sPlayerManager.setPlayMode(mode);
+            //通知UI更新界面
+            for (IPlayerCallback callback : mCallbacks) {
+                callback.onPlayModeChange(mode);
+            }
+            SharedPreferences.Editor edit = mPlayMode.edit();
+            edit.putInt(SP_KEY,getIntValByMode(mode));
+            edit.commit();
+        }
+    }
 
+    private int getIntValByMode(XmPlayListControl.PlayMode playMode){
+        switch (playMode){
+            case PLAY_MODEL_LIST:return PLAY_MODE_LIST_INT;
+            case PLAY_MODEL_LIST_LOOP:return PLAY_MODE_LIST_LOOP_INT;
+            case PLAY_MODEL_RANDOM:return PLAY_MODE_RANDOM_INT;
+            case PLAY_MODEL_SINGLE_LOOP:return PLAY_MODE_SINGLE_LOOP_INT;
+        }
+        return 0;
     }
 
     @Override
@@ -121,6 +163,9 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
     @Override
     public void seekTo(int progress) {
         sPlayerManager.seekTo(progress);
+        for (IPlayerCallback callback : mCallbacks) {
+            callback.onProgressChange(progress,mTrack.getDuration());
+        }
     }
 
     @Override
@@ -130,12 +175,50 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
 
     }
 
+    //TODO:认真揣摩，重构复用的优美
+    @Override
+    public void reverseOrder() {
+        List<Track> playList = sPlayerManager.getPlayList();
+        Collections.reverse(playList);
+
+        mCurrentIndex = playList.size()-mCurrentIndex-1;
+        sPlayerManager.setPlayList(playList,mCurrentIndex);
+
+        mTrack = (Track)sPlayerManager.getCurrSound();
+        for (IPlayerCallback callback : mCallbacks) {
+            callback.onListLoaded(playList);
+            callback.onTrackUpdate(mTrack,mCurrentIndex);
+        }
+    }
+
+    @Override
+    public boolean hasPlayList() {
+        return isPlayListSet;
+    }
+
     @Override
     public void registerViewCallback(IPlayerCallback iPlayerCallback) {
         iPlayerCallback.onTrackUpdate(mTrack,mCurrentIndex);
+
+        //从sharedPreference中获取
+        int val = mPlayMode.getInt(SP_KEY, PLAY_MODE_LIST_INT);
+        mCurMode = getPlayModeByIntVal(val);
+
+        iPlayerCallback.onPlayModeChange(mCurMode);
         if(!mCallbacks.contains(iPlayerCallback)){
             mCallbacks.add(iPlayerCallback);
         }
+    }
+
+    private XmPlayListControl.PlayMode getPlayModeByIntVal(int val) {
+
+        switch (val){
+            case PLAY_MODE_LIST_INT:return PLAY_MODEL_LIST;
+            case PLAY_MODE_LIST_LOOP_INT:return PLAY_MODEL_LIST_LOOP;
+            case PLAY_MODE_RANDOM_INT:return PLAY_MODEL_RANDOM;
+            case PLAY_MODE_SINGLE_LOOP_INT:return PLAY_MODEL_SINGLE_LOOP;
+        }
+        return PLAY_MODEL_LIST;
     }
 
     @Override
@@ -185,7 +268,7 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
     //================广告相关的回调=======end========
 
 
-    //播放器相关的回调===============start
+    //=============播放器相关的回调===============start
     @Override
     public void onPlayStart() {
         LogUtil.e(TAG,"content:onPlayStart");
@@ -216,6 +299,7 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
     @Override
     public void onSoundPrepared() {
         LogUtil.d(TAG,"onSoundPrepared---");
+        sPlayerManager.setPlayMode(mCurMode);
         if (sPlayerManager.getPlayerStatus() == PlayerConstants.STATE_PREPARED) {
             sPlayerManager.play();
         }
@@ -253,7 +337,6 @@ public class PlayerPresenter implements IPlayerPresenter, IXmAdsStatusListener, 
 
     @Override
     public void onPlayProgress(int curPos, int duration) {
-
         for(IPlayerCallback callback : mCallbacks){
             callback.onProgressChange(curPos,duration);
         }

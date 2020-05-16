@@ -51,4 +51,6 @@ public class PlayerPagerAdapter extends PagerAdapter {
         mData.addAll(tracks);
         notifyDataSetChanged();
     }
+
+
 }

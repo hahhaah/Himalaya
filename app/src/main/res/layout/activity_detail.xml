@@ -44,19 +44,19 @@
 
 
         <ImageView
-            android:id="@+id/play_icon"
+            android:padding="10dp"
+            android:id="@+id/detail_play_icon"
             android:src="@mipmap/another_play"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="15dp"
-            android:layout_width="22dp"
-            android:layout_height="22dp" />
+            android:layout_width="42dp"
+            android:layout_height="42dp" />
 
         <TextView
             android:id="@+id/play_status_view"
             android:text="继续播放"
             android:layout_marginLeft="5dp"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/play_icon"
+            android:layout_toRightOf="@+id/detail_play_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             />

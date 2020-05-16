@@ -5,4 +5,7 @@
         <item>订阅</item>
         <item>历史</item>
     </string-array>
+
+    <string name="playing_now">正在播放</string>
+    <string name="paused_now">已暂停</string>
 </resources>

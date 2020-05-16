@@ -42,7 +42,7 @@ public class DetailListAdapter extends RecyclerView.Adapter<DetailListAdapter.In
         TextView updateTimeTv = itemView.findViewById(R.id.detail_update_time);
 
         Track track = mDetailTracks.get(position);
-        indexTv.setText(position+"");
+        indexTv.setText((position+1)+"");
         titleTv.setText(track.getTrackTitle());
         playCountTv.setText(track.getPlayCount()+"");
 

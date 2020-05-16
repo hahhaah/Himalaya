@@ -22,7 +22,7 @@
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +33,7 @@
         <activity android:name=".DetailActivity" android:parentActivityName=".MainActivity">
         </activity>
 
-        <activity android:name=".PlayerActivity"></activity>
+        <activity android:name=".PlayerActivity" android:screenOrientation="portrait"></activity>
 
         <service android:name="com.ximalaya.ting.android.opensdk.player.service.XmPlayerService"
         android:process=":player"/>
